@@ -25,11 +25,11 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Setup Java 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -38,6 +38,24 @@ jobs:
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+
+      - name: Prepare web assets
+        run: |
+          mkdir -p www
+          cp index.html app.js cloud.js style.css supabase-config.js www/
+          if [ -f manifest.webmanifest ]; then
+            cp manifest.webmanifest www/
+          fi
+          if [ -f icon-192.png ]; then
+            cp icon-192.png www/
+          fi
+          if [ -f icon-512.png ]; then
+            cp icon-512.png www/
+          fi
+          if [ -f sw.js ]; then
+            cp sw.js www/
+          fi
+          test -f www/index.html
 
       - name: Create Android project
         run: npx cap add android
