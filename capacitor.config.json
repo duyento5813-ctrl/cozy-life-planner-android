@@ -1,0 +1,7 @@
+{
+  "appId": "com.cozylifeplanner.app",
+  "appName": "Cozy Life Planner",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "android": { "allowMixedContent": false }
+}
