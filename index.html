@@ -1,0 +1,543 @@
+
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cozy Life Planner</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#fff5e9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <style>
+    .module-menu {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .module-card {
+      display: block;
+      text-decoration: none;
+      color: #534639;
+      background: #fffaf5;
+      border: 1px solid #efdfd0;
+      border-radius: 20px;
+      padding: 26px;
+      cursor: pointer;
+    }
+
+    .module-card:hover {
+      background: #fff0e0;
+      border-color: #d97845;
+    }
+
+    .module-card h2 {
+      margin-bottom: 10px;
+    }
+
+    .module-card p {
+      color: #947969;
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .module-detail {
+      margin-top: 16px;
+    }
+
+    .module-detail[hidden],
+    .app-page[hidden] {
+      display: none !important;
+    }
+
+    .module-back {
+      margin-bottom: 16px;
+    }
+
+    .settings-item {
+      padding: 16px 0;
+      border-bottom: 1px solid #f0e3d5;
+    }
+
+    .settings-item p {
+      color: #947969;
+      font-size: 13px;
+    }
+
+    @media (max-width: 680px) {
+      .module-menu {
+        grid-template-columns: 1fr;
+      }
+
+      .module-card {
+        padding: 18px;
+      }
+    }
+
+    /* Compact task management — no change to other modules */
+    #scheduleTasks .panel { max-width: 100%; }
+    .cozy-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:14px 0; }
+    .cozy-toolbar input[type="date"] { width:auto; max-width:180px; min-height:38px; }
+    .cozy-toolbar button { min-height:38px; }
+    .cozy-search { display:flex; align-items:center; border:1px solid #eadbcc; border-radius:12px; background:#fffaf5; overflow:hidden; margin:12px 0; max-width:680px; }
+    .cozy-search input { border:0 !important; background:transparent !important; outline:0; box-shadow:none !important; min-width:0; width:100%; padding:11px 14px; flex:1; }
+    .cozy-search button { border:0; background:transparent; padding:9px 14px; color:#8a6e5c; font-size:19px; }
+    .cozy-task-list { display:grid; gap:4px; }
+    .cozy-task-row { display:flex; align-items:center; gap:10px; padding:10px 6px; border-bottom:1px solid #f0e5db; min-width:0; }
+    .cozy-task-row .cozy-task-name { flex:1; min-width:0; overflow-wrap:anywhere; }
+    .cozy-task-row .cozy-task-name.is-done { text-decoration:line-through; opacity:.55; }
+    .cozy-task-row .cozy-task-name.is-skipped { opacity:.55; }
+    .cozy-task-row .goal-star { flex-shrink:0; }
+    .cozy-task-row details { position:relative; flex-shrink:0; }
+    .cozy-task-row summary { cursor:pointer; list-style:none; padding:6px 10px; font-size:20px; border-radius:8px; }
+    .cozy-task-row summary::-webkit-details-marker { display:none; }
+    .cozy-task-actions { position:absolute; z-index:15; right:0; top:100%; display:grid; gap:3px; min-width:175px; padding:8px; border:1px solid #eadbcc; background:#fffaf5; box-shadow:0 6px 18px #3c261522; border-radius:12px; }
+    .cozy-task-actions button { text-align:left; white-space:nowrap; }
+    .cozy-task-meta { font-size:12px; color:#9b806c; margin:0 0 6px 35px; overflow-wrap:anywhere; }
+    .cozy-fold { border-top:1px solid #efe0d1; margin-top:16px; padding-top:12px; }
+    .cozy-fold summary { cursor:pointer; font-weight:650; }
+    .cozy-event-row { display:flex; gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid #f0e5db; }
+    .cozy-event-row span { flex:1; overflow-wrap:anywhere; }
+    @media(max-width:680px) { .cozy-toolbar input[type="date"] { max-width:155px; } .cozy-task-actions { min-width:155px; } }
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- MENU CHÍNH: 5 MỤC -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span>
+        個人生活管理
+        <small>Cozy Life Planner</small>
+      </span>
+    </div>
+
+    <nav>
+      <a href="#home" data-page="home">
+        首頁 / Trang chủ
+      </a>
+
+      <a href="#calendar" data-page="calendar">
+        行程管理 / Lịch trình
+      </a>
+
+      <a href="#future" data-page="future">
+        收支管理 / Thu chi
+      </a>
+
+      <a href="#performance" data-page="performance">
+        效率分析 / Hiệu suất
+      </a>
+
+      <a href="#settings" data-page="settings">
+        系統設定 / Cài đặt
+      </a>
+    </nav>
+
+    <div class="cat"></div>
+  </aside>
+
+  <main>
+
+    <header>
+      <div>
+        <h1>Cozy Life Planner</h1>
+        <p>
+          用計畫管理生活，讓每一天更有意義。
+          / Lên kế hoạch cho mỗi ngày.
+        </p>
+      </div>
+
+      <div class="account" id="cozyAccountBadge">離線模式 / Chưa đăng nhập</div>
+    </header>
+
+    <!-- 1. TRANG CHỦ -->
+    <section id="homePage" class="app-page">
+
+      <div class="content">
+
+        <section class="maincol">
+
+          <!-- LỊCH TỔNG QUAN -->
+          <section class="panel" id="calendar">
+
+            <div class="heading">
+              <h2>
+                行程總覽
+                <small>/ Tổng quan lịch trình</small>
+              </h2>
+
+              <div class="controls">
+                <button id="prev" aria-label="Tháng trước">‹</button>
+                <strong id="monthTitle"></strong>
+                <button id="next" aria-label="Tháng sau">›</button>
+
+                <button class="primary" id="addEvent">
+                  ＋ 新增 / Thêm
+                </button>
+              </div>
+            </div>
+
+            <div class="weekday" id="weekdays"></div>
+            <div class="calendar" id="days"></div>
+
+            <p class="hint">
+              點選日期查看或新增行程
+              / Chọn ngày để xem hoặc thêm lịch.
+            </p>
+
+          </section>
+
+          <!-- CÔNG VIỆC VÀ HIỆU SUẤT NGÀY -->
+          <div class="bottom">
+
+            <section class="panel" id="tasks">
+
+              <div class="heading">
+                <h2>
+                  今日待辦
+                  <small>/ Việc hôm nay</small>
+                </h2>
+
+                <button class="round" id="addTask"
+                        aria-label="Thêm công việc">
+                  ＋
+                </button>
+              </div>
+
+              <div id="taskList"></div>
+
+            </section>
+
+            <section class="panel" id="performance">
+
+              <h2>
+                今日目標達成率
+                <small>/ Hiệu suất mục tiêu ngày</small>
+              </h2>
+
+              <div class="donut" id="donut">
+                <span id="todayPct">0%</span>
+              </div>
+
+              <div class="stats" id="stats"></div>
+
+            </section>
+
+          </div>
+
+        </section>
+
+        <aside class="right">
+
+          <!-- DANH SÁCH MỤC TIÊU QUAN TRỌNG -->
+          <section class="panel" id="importantGoals">
+
+            <h2>
+              重要目標
+              <small>/ Mục tiêu quan trọng</small>
+            </h2>
+
+            <div id="importantGoalList"></div>
+
+          </section>
+          <section class="panel" id="importantFinance"><h2>重要收支 <small>/ Thu chi quan trọng</small></h2><div id="importantFinanceList"></div></section>
+        </aside>
+
+      </div>
+
+    </section>
+
+    <!-- 2. QUẢN LÝ LỊCH TRÌNH -->
+    <section id="schedulePage" class="app-page" hidden>
+
+      <section class="panel">
+
+        <h2>
+          行程管理
+          <small>/ Quản lý lịch trình</small>
+        </h2>
+
+        
+
+        <div class="module-menu">
+
+          <a href="#tasks"
+             class="module-card"
+             data-schedule-section="tasks">
+
+            <h2>待辦事項 / Việc cần làm</h2>
+
+            
+
+          </a>
+
+          <a href="#goals"
+             class="module-card"
+             data-schedule-section="goals">
+
+            <h2>目標管理 / Mục tiêu</h2>
+
+            <p>
+              管理年度、月度及每日目標。
+              / Quản lý mục tiêu năm, tháng và ngày.
+            </p>
+
+          </a>
+
+        </div>
+
+      </section>
+
+      <!-- VIỆC CẦN LÀM -->
+      <section id="scheduleTasks"
+               class="module-detail"
+               hidden>
+
+        <button class="module-back"
+                type="button"
+                data-back-schedule>
+          ‹ 返回 / Quay lại
+        </button>
+
+        <section class="panel">
+
+          <h2>
+            待辦事項
+            <small>/ Việc cần làm</small>
+          </h2>
+
+          
+
+          <div id="scheduleTaskList"></div>
+
+        </section>
+
+      </section>
+
+      <!-- MỤC TIÊU -->
+      <section id="goalsPage"
+               class="module-detail"
+               hidden>
+
+        <button class="module-back"
+                type="button"
+                data-back-schedule>
+          ‹ 返回 / Quay lại
+        </button>
+
+        <section class="panel" id="goals">
+
+          <h2>
+            目標管理
+            <small>/ Quản lý mục tiêu</small>
+          </h2>
+
+          <div class="goal-tabs">
+
+            <button type="button" data-goal-type="year">
+              年度目標 / Mục tiêu năm
+            </button>
+
+            <button type="button" data-goal-type="month">
+              月度目標 / Mục tiêu tháng
+            </button>
+
+            <button type="button" data-goal-type="day">
+              每日目標 / Mục tiêu ngày
+            </button>
+
+          </div>
+
+          <div id="goalManager"></div>
+
+        </section>
+
+      </section>
+
+    </section>
+
+    <!-- 3. QUẢN LÝ THU CHI -->
+    <section id="futurePage" class="app-page" hidden>
+
+      <section class="panel" id="future">
+
+        <h2>
+          收支管理
+          <small>/ Quản lý thu chi</small>
+        </h2>
+
+        <div class="fin-period"><button id="finPrev" type="button">‹</button><strong id="finMonth"></strong><button id="finNext" type="button">›</button></div>
+        <div class="fin-summary" id="finSummary"></div><div id="finOverviewAvailable"></div>
+        <div class="fin-v2-tabs"><button class="active" data-fin-view="transactions">管理 / Quản lý</button><button data-fin-view="report">統計 / Thống kê</button></div>
+        <div id="finTransactions" class="fin-view">
+          <div class="fin-v2-subtabs"><button data-fin-section="transactions">收支 · Thu chi</button><button class="active" data-fin-section="planning">計畫 · Kế hoạch</button><button data-fin-section="accounts">帳戶 · Tài khoản</button></div>
+          <div id="finTransactionsInner" class="fin-v2-section" hidden><div class="fin-v2-heading"><h3>交易紀錄 / Giao dịch</h3><button id="finAdd" class="fin-primary">＋ 新增收支 / Thêm thu chi</button></div><div class="fin-search"><input id="finSearch" placeholder="搜尋交易 / Tìm giao dịch"><button id="finFilter" title="Bộ lọc">☷</button></div><div id="finFilterOptions" hidden><select id="finType"><option value="all">全部 / Tất cả</option><option value="income">收入 / Thu</option><option value="expense">支出 / Chi</option></select><label><input type="checkbox" id="finOnlyStar"> ★ 重要 / Quan trọng</label></div><div id="finPending"></div><div id="finList"></div></div>
+          <div id="finPlanningInner" class="fin-v2-section"><div class="fin-v2-heading"><h3>財務計畫 / Kế hoạch tài chính</h3><button id="finAddPlan" class="fin-primary">＋ 新增</button></div><div id="finAvailable"></div><div id="finPlans"></div></div>
+          <div id="finAccountsInner" class="fin-v2-section" hidden><div class="fin-v2-heading"><h3>帳戶 / Tài khoản</h3><button id="finAddAccount" class="fin-primary">＋ 新增</button></div><div id="finAccounts"></div><p class="fin-account-note">現金與銀行帳戶 / Chỉ gồm Tiền mặt và các tài khoản Ngân hàng.</p></div>
+          <div id="finManage" hidden><div id="finBudgets"></div><button id="finAddBudget">＋</button><div id="finSavings"></div><button id="finAddSaving">＋</button><div id="finDebts"></div><button id="finAddDebt">＋</button></div>
+        </div>
+        <div id="finReport" class="fin-view" hidden><div class="fin-v2-report-controls"><label>期間 / Kỳ <select id="finReportPeriod"><option value="month">月 / Tháng</option><option value="day">日 / Ngày</option><option value="year">年 / Năm</option></select></label><label>帳戶 / Tài khoản <select id="finReportAccount"><option value="all">全部 / Tất cả</option></select></label></div><div id="finReportContent"></div><button id="finExportCsv">匯出 CSV / Xuất CSV</button></div>
+        <details class="fin-data"><summary>資料管理 / Dữ liệu tài chính</summary><button id="finBackup">匯出 JSON / Sao lưu</button><label>匯入 JSON / Khôi phục <input type="file" id="finRestore" accept=".json,application/json"></label><p class="hint">資料儲存在此瀏覽器 / Dữ liệu lưu trong trình duyệt này.</p></details>
+        <dialog id="finDialog" class="fin-dialog"><form id="finForm" method="dialog"><h3 id="finDialogTitle"></h3><div id="finFields"></div><div class="fin-actions"><button type="button" id="finCancel">取消 / Hủy</button><button type="submit" class="fin-primary">儲存 / Lưu</button></div></form></dialog>
+      </section>
+
+    </section>
+
+    <!-- 4. PHÂN TÍCH HIỆU SUẤT -->
+<section id="performancePage" class="app-page" hidden>
+  <section class="panel">
+    <h2>效率分析 <small>/ Phân tích hiệu suất</small></h2>
+    <div class="cozy-tabs" id="effMainTabs">
+      <button type="button" data-eff-main="report" class="active">綜合分析報告 / Báo cáo</button>
+      <button type="button" data-eff-main="lab">生活實驗室 / Mô phỏng</button>
+    </div>
+    <div id="effReport">
+      <div class="eff-filters">
+        <label>期間 / Kỳ <select id="effPeriod"><option value="day">日 / Ngày</option><option value="month" selected>月 / Tháng</option><option value="year">年 / Năm</option></select></label>
+        <label>日期 / Thời gian <input id="effDate" type="month"></label>
+        <button id="effSaveReport" type="button">儲存報告 / Lưu báo cáo</button>
+      </div>
+      <div id="effSummary" class="eff-cards"></div>
+      <div class="eff-columns">
+        <section class="eff-panel"><h3>目標分析 / Mục tiêu</h3><div id="effGoals"></div></section>
+        <section class="eff-panel"><h3>任務分析 / Công việc</h3><div id="effTasks"></div></section>
+      </div>
+      <section class="eff-panel"><h3>財務分析 / Tài chính</h3><div id="effFinance"></div></section>
+      <section class="eff-panel"><h3>綜合判斷 / Nhận định</h3><div id="effInsights"></div></section>
+      <section class="eff-panel"><h3>未來預測 / Dự tính</h3><div id="effForecast"></div></section>
+      <details class="eff-panel"><summary>歷史報告 / Báo cáo đã lưu</summary><div id="effSaved"></div></details>
+    </div>
+    <div id="effLab" hidden>
+      <div class="eff-lab-grid">
+        <label>每月收入 / Thu nhập tháng (TWD)<input id="effIncome" type="number" step="0.01" min="0" value="12407"></label>
+        <label>每月支出 / Chi tiêu tháng (TWD)<input id="effExpense" type="number" step="0.01" min="0" value="9000"></label>
+        <label>可用時間 / Thời gian mỗi ngày (giờ)<input id="effHours" type="number" step="1" min="0" max="24" value="2"></label>
+        <label>分鐘 / Phút<input id="effMinutes" type="number" step="1" min="0" max="59" value="30"></label>
+        <label>任務數量 / Số công việc<input id="effWork" type="number" step="1" min="0" value="12"></label>
+        <label>每項耗時 / Phút mỗi việc<input id="effDuration" type="number" step="1" min="1" value="45"></label>
+        <label>模擬天數 / Số ngày<input id="effDays" type="number" step="1" min="1" value="30"></label>
+      </div>
+      <div id="effSimulation" class="eff-panel"></div>
+      <div class="eff-filters"><input id="effScenarioName" placeholder="方案名稱 / Tên phương án" maxlength="60"><button type="button" id="effSaveScenario">儲存方案 / Lưu</button></div>
+      <div id="effScenarios"></div>
+    </div>
+  </section>
+</section>
+
+    <!-- 5. CÀI ĐẶT -->
+    <section id="settingsPage" class="app-page" hidden>
+
+      <section class="panel">
+
+        <h2>
+          系統設定
+          <small>/ Cài đặt hệ thống</small>
+        </h2>
+
+        <section class="cozy-auth" id="cozyAuthPanel" aria-label="Tài khoản Cozy Life Planner">
+          <h3>我的帳號 / Tài khoản</h3>
+          <p id="cozyAuthStatus" class="hint">載入中 / Đang tải...</p>
+          <div class="cozy-auth-tabs" role="group" aria-label="Chọn chế độ tài khoản">
+            <button type="button" class="active" id="cozyModeLogin" aria-pressed="true">登入 / Đăng nhập</button>
+            <button type="button" id="cozyModeRegister" aria-pressed="false">註冊 / Đăng ký</button>
+            <button type="button" id="cozyModeReset" aria-pressed="false">忘記密碼 / Quên mật khẩu</button>
+          </div>
+          <p id="cozyModeDescription" class="hint">登入現有帳號 / Đăng nhập tài khoản đã có</p>
+          <form id="cozyAuthForm" class="cozy-auth-form">
+            <label>電子郵件 / Email<input id="cozyEmail" type="email" autocomplete="email" required></label>
+            <label id="cozyPasswordField">密碼 / Mật khẩu<input id="cozyPassword" type="password" autocomplete="current-password" minlength="6" required></label>
+            <label id="cozyConfirmField" hidden>確認密碼 / Xác nhận mật khẩu<input id="cozyConfirmPassword" type="password" autocomplete="new-password" minlength="6" disabled></label>
+            <div class="cozy-auth-actions"><button class="primary" type="submit" id="cozyAuthSubmit">登入 / Đăng nhập</button></div>
+          </form>
+          <div id="cozySignedIn" hidden>
+            <button type="button" id="cozyLogout">登出 / Đăng xuất</button>
+            <button type="button" id="cozyChangePassword">修改密碼 / Đổi mật khẩu</button>
+          </div>
+          <p id="cozyAuthMessage" class="hint" role="status" aria-live="polite"></p>
+        </section>
+        <details class="cozy-setting"><summary>語言與外觀 / Ngôn ngữ và giao diện</summary>
+          <label>語言 / Ngôn ngữ <select id="cozyLanguage"><option value="bilingual">繁中 / Việt (Song ngữ)</option><option value="zh-Hant">繁體中文</option><option value="vi">Tiếng Việt</option></select></label>
+          <p class="hint">語言選擇將套用至帳號設定；完整單語翻譯尚未完成 / Lưu lựa chọn ngôn ngữ; bản dịch toàn giao diện chưa hoàn tất.</p>
+          <label>主題 / Giao diện <select id="cozyTheme"><option value="light">淺色 / Sáng</option><option value="dark">深色 / Tối</option><option value="system">跟隨系統 / Theo máy</option></select></label>
+        </details>
+        <details class="cozy-setting"><summary>通知提醒 / Thông báo</summary>
+          <label><input id="cozyReminders" type="checkbox" checked> 待辦提醒 / Nhắc công việc khi ứng dụng đang mở</label>
+        </details>
+        <details class="cozy-setting" open><summary>雲端同步 / Đồng bộ đám mây</summary>
+          <p id="cozySyncStatus" class="hint">尚未連線 / Chưa kết nối</p>
+          <button type="button" id="cozySyncNow">立即同步 / Đồng bộ ngay</button>
+          <button type="button" id="cozyExportAll">完整備份 / Sao lưu toàn bộ JSON</button>
+          <p class="hint">首次同步請先備份；已有雲端資料時，需選擇保留哪個版本 / Sao lưu trước; khi đã có dữ liệu trên mây, cần chọn phiên bản giữ lại.</p>
+        </details>
+        <details class="cozy-setting" id="cozyDataSetting"><summary>資料管理 / Quản lý dữ liệu</summary>
+          <div id="cozyDataTools"></div>
+        </details>
+
+      </section>
+
+    </section>
+
+  </main>
+
+</div>
+
+<!-- HỘP THÊM LỊCH TRÌNH -->
+<dialog id="editor">
+
+  <form method="dialog" id="eventForm">
+
+    <h2>新增行程 / Thêm lịch trình</h2>
+
+    <label>
+      標題 / Tên
+      <input id="eventName"
+             required
+             maxlength="100">
+    </label>
+
+    <label>
+      日期 / Ngày
+      <input type="date"
+             id="eventDate"
+             required>
+    </label>
+
+    <label>
+      時間 / Giờ
+      <input type="time"
+             id="eventTime"
+             required>
+    </label>
+
+    <menu>
+
+      <button type="button" id="cancel">
+        取消 / Hủy
+      </button>
+
+      <button class="primary" type="submit">
+        儲存 / Lưu
+      </button>
+
+    </menu>
+
+  </form>
+
+</dialog>
+
+<script src="app.js"></script>
+<script type="module" src="cloud.js"></script>
+
+<script>
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(console.warn)); }
+</script>
+</body>
+</html>
